@@ -46,12 +46,19 @@ RUN git clone --recursive --branch "$QUICTLS_VER" https://github.com/quictls/ope
 RUN (git clone --recursive --branch "$MODSEC_VER" https://github.com/SpiderLabs/ModSecurity /src/ModSecurity \
         && sed -i "s|SecRuleEngine.*|SecRuleEngine On|g" /src/ModSecurity/modsecurity.conf-recommended \
         && sed -i "s|unicode.mapping|/etc/nginx/modsec/unicode.mapping|g" /src/ModSecurity/modsecurity.conf-recommended \
+        && echo -e "Include /etc/nginx/modsec/modsecurity.conf\nInclude /etc/nginx/modsec/modsecurity-crs/crs-setup.conf\nInclude /etc/nginx/modsec/modsecurity-crs/rules/*.conf" > /src/ModSecurity/owasp-crs_main.conf \
         && cd /src/ModSecurity \
         && /src/ModSecurity/build.sh \
         && /src/ModSecurity/configure --with-pcre2 --with-lmdb \
         && make -j "$(nproc)" \
         && make -j "$(nproc)" install \
         && strip -s /usr/local/modsecurity/lib/libmodsecurity.so.3) 
+
+# OWASP-CRS
+
+RUN (git clone --recursive https://github.com/coreruleset/coreruleset /src/modsecurity-crs \
+        && cp /src/modsecurity-crs/crs-setup.conf.example /src/modsecurity-crs/crs-setup.conf \
+        && cp /src/modsecurity-crs/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example /src/modsecurity-crs/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf)
 
 # Modules
 
@@ -167,6 +174,8 @@ RUN mkdir -p /var/log/nginx/ \
 
 COPY --from=build /src/ModSecurity/unicode.mapping  /etc/nginx/modsec/unicode.mapping
 COPY --from=build /src/ModSecurity/modsecurity.conf-recommended /etc/nginx/modsec/modsecurity.conf.example
+COPY --from=build /src/modsecurity-crs /etc/nginx/modsec/modsecurity-crs
+COPY --from=build /src/ModSecurity/owasp-crs_main.conf /etc/nginx/modsec/owasp-crs_main.conf
 
 LABEL maintainer="Bence Kócsi <info@benedict.systems>"
 
