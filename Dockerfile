@@ -59,6 +59,8 @@ RUN (git clone --recursive --branch "$MODSEC_VER" https://github.com/SpiderLabs/
 RUN (git clone --recursive --branch v4.0/main https://github.com/coreruleset/coreruleset /src/modsecurity-crs \
         && cp /src/modsecurity-crs/crs-setup.conf.example /src/modsecurity-crs/crs-setup.conf \
         && cp /src/modsecurity-crs/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example /src/modsecurity-crs/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf \
+        && rm -rf /src/modsecurity-crs/.git \
+        && rm -rf /src/modsecurity-crs/.github \
         && find /src/modsecurity-crs/* ! -name 'crs-setup.conf' ! -path '/src/modsecurity-crs/rules' ! -path '/src/modsecurity-crs/rules/*' -exec rm -rf {} +)
 
 # Modules
