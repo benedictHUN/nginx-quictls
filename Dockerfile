@@ -56,9 +56,10 @@ RUN (git clone --recursive --branch "$MODSEC_VER" https://github.com/SpiderLabs/
 
 # OWASP-CRS
 
-RUN (git clone --recursive https://github.com/coreruleset/coreruleset /src/modsecurity-crs \
+RUN (git clone --recursive --branch v4.0/main https://github.com/coreruleset/coreruleset /src/modsecurity-crs \
         && cp /src/modsecurity-crs/crs-setup.conf.example /src/modsecurity-crs/crs-setup.conf \
-        && cp /src/modsecurity-crs/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example /src/modsecurity-crs/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf)
+        && cp /src/modsecurity-crs/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example /src/modsecurity-crs/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf \
+        && find /src/modsecurity-crs/* ! -name 'crs-setup.conf' ! -path '/src/modsecurity-crs/rules' ! -path '/src/modsecurity-crs/rules/*' -exec rm -rf {} +)
 
 # Modules
 
@@ -173,7 +174,7 @@ RUN mkdir -p /var/log/nginx/ \
     && ln -s /usr/lib/nginx/modules /etc/nginx/modules
 
 COPY --from=build /src/ModSecurity/unicode.mapping  /etc/nginx/modsec/unicode.mapping
-COPY --from=build /src/ModSecurity/modsecurity.conf-recommended /etc/nginx/modsec/modsecurity.conf.example
+COPY --from=build /src/ModSecurity/modsecurity.conf-recommended /etc/nginx/modsec/modsecurity.conf
 COPY --from=build /src/modsecurity-crs /etc/nginx/modsec/modsecurity-crs
 COPY --from=build /src/ModSecurity/owasp-crs_main.conf /etc/nginx/modsec/owasp-crs_main.conf
 
